@@ -44,7 +44,8 @@ export default {
   computed: {
     ...mapGetters([
       'sidebar',
-      'avatar'
+      'avatar',
+      'device'
     ])
   },
   methods: {
@@ -112,10 +113,12 @@ export default {
     }
 
     .avatar-container {
+      // 调整头像容器的位置（可选，辅助微调）
       margin-right: 30px;
 
       .avatar-wrapper {
         margin-top: 5px;
+        // 确保头像容器相对定位，为下拉菜单的绝对定位提供参考
         position: relative;
 
         .user-avatar {

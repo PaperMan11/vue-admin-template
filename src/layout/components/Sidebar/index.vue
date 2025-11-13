@@ -1,6 +1,9 @@
 <template>
   <div :class="{'has-logo':showLogo}">
     <logo v-if="showLogo" :collapse="isCollapse" />
+    <template v-if="device !== 'mobile'">
+      <search id="header-search" class="right-menu-item" />
+    </template>
     <el-scrollbar wrap-class="scrollbar-wrapper">
       <el-menu
         :default-active="activeMenu"
@@ -22,10 +25,11 @@
 import { mapGetters } from 'vuex'
 import Logo from './Logo'
 import SidebarItem from './SidebarItem'
+import Search from '@/components/HeaderSearch'
 import variables from '@/styles/variables.scss'
 
 export default {
-  components: { SidebarItem, Logo },
+  components: { SidebarItem, Logo, Search },
   computed: {
     ...mapGetters([
       'sidebar'
