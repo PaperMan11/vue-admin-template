@@ -143,26 +143,37 @@ export default {
 .header-search {
   font-size: 0 !important;
 
-  // 调整组件整体宽度（根据需求修改，默认可能过宽）
-  width: 180px !important;
-  margin: 8px auto; // 上下间距+水平居中（适配侧边栏布局）
+  .search-icon {
+    cursor: pointer;
+    font-size: 18px;
+    vertical-align: middle;
+  }
 
   .header-search-select {
-    font-size: 13px !important; // 输入框字体缩小
-    height: 30px !important; // 输入框高度（原默认 ~49px）
+    font-size: 18px;
+    transition: width 0.2s;
+    width: 0;
+    overflow: hidden;
+    background: transparent;
+    border-radius: 0;
+    display: inline-block;
+    vertical-align: middle;
 
-    // 穿透输入框内部样式
     ::v-deep .el-input__inner {
-      height: 30px !important; // 输入框内部高度同步
-      line-height: 30px !important; // 垂直居中
-      font-size: 13px !important;
+      border-radius: 0;
+      border: 0;
+      padding-left: 0;
+      padding-right: 0;
+      box-shadow: none !important;
+      border-bottom: 1px solid #d9d9d9;
+      vertical-align: middle;
     }
   }
 
   &.show {
     .header-search-select {
-      width: calc(100% - 24px) !important; // 减去图标和间距
-      margin-left: 6px !important; // 缩小图标与输入框间距
+      width: 210px;
+      margin-left: 10px;
     }
   }
 }
