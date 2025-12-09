@@ -29,6 +29,12 @@ const tableRouter = {
       component: () => import('@/views/table/inline-edit-table'),
       name: 'InlineEditTable',
       meta: { title: 'Inline Edit' }
+    },
+    {
+      path: 'form',
+      name: 'Form',
+      component: () => import('@/views/form/index'),
+      meta: { title: 'Form' }
     }
   ]
 }
