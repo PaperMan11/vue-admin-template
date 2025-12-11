@@ -43,10 +43,10 @@
 
       <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleLogin">Login</el-button>
 
-      <div class="tips">
+      <!-- <div class="tips">
         <span style="margin-right:20px;">username: admin</span>
         <span> password: any</span>
-      </div>
+      </div> -->
 
     </el-form>
   </div>
@@ -54,6 +54,7 @@
 
 <script>
 import { validUsername } from '@/utils/validate'
+import { Message } from 'element-ui'
 
 export default {
   name: 'Login',
@@ -74,8 +75,8 @@ export default {
     }
     return {
       loginForm: {
-        username: 'admin',
-        password: '111111'
+        username: '',
+        password: ''
       },
       loginRules: {
         username: [{ required: true, trigger: 'blur', validator: validateUsername }],
@@ -112,8 +113,14 @@ export default {
           this.$store.dispatch('user/login', this.loginForm).then(() => {
             this.$router.push({ path: this.redirect || '/' })
             this.loading = false
-          }).catch(() => {
+          }).catch((errorMsg) => {
             this.loading = false
+            // 统一提示HTTP错误
+            Message({
+              message: errorMsg,
+              type: 'error',
+              duration: 5 * 1000
+            })
           })
         } else {
           console.log('error submit!!')
