@@ -9,6 +9,7 @@ import componentsRouter from './modules/components'
 import chartsRouter from './modules/charts'
 import nestedRouter from './modules/nested'
 import tableRouter from './modules/table'
+import userManagementRouter from './modules/sys/user/user'
 /*
   // 当设置 true 的时候该路由不会在侧边栏出现 如401，login等页面，或者如一些编辑页面/edit/1
   hidden: true // (默认 false)
@@ -79,20 +80,6 @@ export const constantRoutes = [
       meta: { title: 'Dashboard', icon: 'dashboard', affix: true }
     }]
   },
-
-  // {
-  //   path: '/form',
-  //   component: Layout,
-  //   children: [
-  //     {
-  //       path: 'index',
-  //       name: 'Form',
-  //       component: () => import('@/views/form/index'),
-  //       meta: { title: 'Form', icon: 'form' }
-  //     }
-  //   ]
-  // },
-
   {
     path: 'external-link',
     component: Layout,
@@ -117,7 +104,7 @@ export const constantRoutes = [
       }
     ]
   },
-
+  userManagementRouter,
   // 404 page must be placed at the end !!!
   { path: '*', redirect: '/404', hidden: true }
 ]
