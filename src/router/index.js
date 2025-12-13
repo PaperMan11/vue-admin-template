@@ -9,7 +9,7 @@ import componentsRouter from './modules/components'
 import chartsRouter from './modules/charts'
 import nestedRouter from './modules/nested'
 import tableRouter from './modules/table'
-import userManagementRouter from './modules/sys/user/user'
+import systemManagementRouter from './modules/sys'
 /*
   // 当设置 true 的时候该路由不会在侧边栏出现 如401，login等页面，或者如一些编辑页面/edit/1
   hidden: true // (默认 false)
@@ -104,7 +104,7 @@ export const constantRoutes = [
       }
     ]
   },
-  userManagementRouter,
+  systemManagementRouter,
   // 404 page must be placed at the end !!!
   { path: '*', redirect: '/404', hidden: true }
 ]

@@ -1,28 +1,33 @@
 <template>
   <div class="user-manager-container">
-    <!-- 搜索栏 -->
-    <el-card class="search-card">
-      <el-form :inline="true" :model="searchForm" class="search-form">
-        <el-form-item label="状态">
-          <el-select v-model="searchForm.status" placeholder="全部">
-            <el-option label="正常" value="1" />
-            <el-option label="禁用" value="0" />
-          </el-select>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="getUserList">查询</el-button>
-          <el-button type="success" @click="openAddDialog">新增用户</el-button>
-        </el-form-item>
-      </el-form>
-    </el-card>
+    <el-card>
+      <!-- 搜索栏 -->
+      <div class="search-form table-card">
+        <el-form :inline="true" :model="searchForm">
+          <el-form-item label="状态">
+            <el-select v-model="searchForm.status" placeholder="全部">
+              <el-option label="正常" value="1" />
+              <el-option label="禁用" value="0" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="用户名">
+            <el-input v-model="searchForm.keyword" placeholder="请输入内容" />
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" size="small" @click="getUserList">查询</el-button>
+          </el-form-item>
+        </el-form>
 
-    <!-- 用户列表 -->
-    <el-card class="table-card">
+        <el-button icon="el-icon-refresh-right" size="small" type="info" @click="getUserList" />
+        <el-button type="success" size="small" @click="openAddDialog">新增用户</el-button>
+      </div>
+
+      <!-- 用户列表 -->
       <el-table v-loading="loading" :data="userList" border stripe>
-        <el-table-column prop="id" label="用户ID" width="100" />
+        <el-table-column prop="id" label="用户ID" width="100" fixed />
         <el-table-column prop="username" label="用户名" width="120" />
         <el-table-column prop="real_name" label="真实姓名" width="120" />
-        <el-table-column prop="email" label="邮箱" min-width="150" />
+        <el-table-column prop="email" label="邮箱" min-width="120" />
         <el-table-column prop="mobile" label="手机号" width="120" />
         <el-table-column prop="gender" label="性别" width="80">
           <template slot-scope="{row}">
@@ -38,7 +43,7 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="300">
+        <el-table-column label="操作" width="400" fixed="right">
           <template slot-scope="{row}">
             <el-button size="mini" type="primary" @click="openEditDialog(row)">编辑</el-button>
             <el-button size="mini" type="warning" @click="toggleUserStatus(row)">
@@ -109,7 +114,7 @@
 
     <!-- 分配角色弹窗 -->
     <el-dialog
-      title="分配角色"
+      :title="dialogTitle"
       :visible.sync="roleDialogVisible"
       width="500px"
       :close-on-click-modal="false"
@@ -195,9 +200,9 @@ import {
   updatePassword,
   updateUserPassword,
   getUserById
-} from '@/api/sys/user/user.js'
+} from '@/api/sys/user.js'
 
-import { getAllRoles } from '@/api/sys/role/role'
+import { getAllRoles } from '@/api/sys/role.js'
 
 export default {
   name: 'UserManager',
@@ -217,7 +222,8 @@ export default {
     return {
       // 搜索表单
       searchForm: {
-        status: '',
+        keyword: '',
+        status: '1',
         page: 1,
         page_size: 10
       },
@@ -332,8 +338,8 @@ export default {
         email: '',
         mobile: '',
         real_name: '',
-        gender: 0,
-        status: 1
+        gender: '0',
+        status: '1'
       }
       this.dialogVisible = true
     },
@@ -342,16 +348,15 @@ export default {
       this.isAdd = false
       this.dialogTitle = '编辑用户'
       try {
-        const res = await getUserById(row.id)
         this.form = {
-          id: res.id,
-          username: res.username, // 编辑时用户名不可改
+          id: row.id,
+          username: row.username, // 编辑时用户名不可改
           password: '', // 编辑时不显示密码
-          email: res.email,
-          mobile: res.mobile,
-          real_name: res.real_name,
-          gender: res.gender,
-          status: res.status
+          email: row.email,
+          mobile: row.mobile,
+          real_name: row.real_name,
+          gender: row.gender,
+          status: row.status
         }
         this.dialogVisible = true
       } catch (err) {
@@ -408,6 +413,7 @@ export default {
     },
     // 打开分配角色弹窗
     async assignUserRole(row) {
+      this.dialogTitle = '分配角色'
       try {
         // 当前用户角色列表
         const res = await getUserById(row.id)
