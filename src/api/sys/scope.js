@@ -70,7 +70,7 @@ export function deleteScopeMenus(data) {
   })
 }
 
-// 获取安全范围菜单
+// 获取安全范围菜单树
 export function getScopeMenus(id) {
   return request({
     url: `/api/sys/scope/menus/${id}`,
@@ -119,5 +119,22 @@ export function deleteMenu(data) {
     url: '/api/sys/scope/menu',
     method: 'delete',
     data
+  })
+}
+
+// 切换安全范围状态
+export function toggleScopeStatus(data) {
+  return request({
+    url: '/api/sys/scope/status',
+    method: 'put',
+    data
+  })
+}
+
+// 未分配安全范围菜单
+export function getUnassignedScopeMenus() {
+  return request({
+    url: `/api/sys/scope/menus/unassigned`,
+    method: 'get'
   })
 }

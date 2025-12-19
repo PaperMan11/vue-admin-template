@@ -6,8 +6,9 @@
         <el-form :inline="true" :model="searchForm">
           <el-form-item label="状态">
             <el-select v-model="searchForm.status" placeholder="全部">
-              <el-option label="正常" value="1" />
-              <el-option label="禁用" value="0" />
+              <el-option label="正常" :value="1" />
+              <el-option label="禁用" :value="0" />
+              <el-option label="全部" :value="2" />
             </el-select>
           </el-form-item>
           <el-form-item label="用户名">
@@ -19,7 +20,7 @@
         </el-form>
 
         <el-button icon="el-icon-refresh-right" size="small" type="info" @click="getUserList" />
-        <el-button type="success" size="small" @click="openAddDialog">新增用户</el-button>
+        <el-button type="success" :disabled="!perms.canAdd" size="small" @click="openAddDialog">新增用户</el-button>
       </div>
 
       <!-- 用户列表 -->
@@ -45,13 +46,13 @@
         </el-table-column>
         <el-table-column label="操作" width="400" fixed="right">
           <template slot-scope="{row}">
-            <el-button size="mini" type="primary" @click="openEditDialog(row)">编辑</el-button>
-            <el-button size="mini" type="warning" @click="toggleUserStatus(row)">
+            <el-button size="mini" type="primary" :disabled="!perms.canEdit" @click="openEditDialog(row)">编辑</el-button>
+            <el-button size="mini" type="warning" :disabled="!perms.canEdit" @click="toggleUserStatus(row)">
               {{ row.status === 1 ? '禁用' : '启用' }}
             </el-button>
-            <el-button size="mini" type="info" @click="assignUserRole(row)">分配角色</el-button>
-            <el-button size="mini" type="danger" @click="deleteUser(row)">删除</el-button>
-            <el-button size="mini" type="text" @click="resetUserPassword(row)">重置密码</el-button>
+            <el-button size="mini" type="info" :disabled="!perms.canEdit" @click="assignUserRole(row)">分配角色</el-button>
+            <el-button size="mini" type="danger" :disabled="!perms.canDelete" @click="deleteUser(row)">删除</el-button>
+            <el-button size="mini" type="text" :disabled="!perms.canEdit" @click="resetUserPassword(row)">重置密码</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -94,15 +95,15 @@
         </el-form-item>
         <el-form-item label="性别" prop="gender">
           <el-select v-model="form.gender" placeholder="请选择性别">
-            <el-option label="未知" value="0" />
-            <el-option label="男" value="1" />
-            <el-option label="女" value="2" />
+            <el-option label="未知" :value="0" />
+            <el-option label="男" :value="1" />
+            <el-option label="女" :value="2" />
           </el-select>
         </el-form-item>
         <el-form-item v-if="isAdd" label="状态" prop="status">
           <el-select v-model="form.status" placeholder="请选择状态">
-            <el-option label="正常" value="1" />
-            <el-option label="禁用" value="0" />
+            <el-option label="正常" :value="1" />
+            <el-option label="禁用" :value="0" />
           </el-select>
         </el-form-item>
       </el-form>
@@ -203,6 +204,7 @@ import {
 } from '@/api/sys/user.js'
 
 import { getAllRoles } from '@/api/sys/role.js'
+import { initPermissions } from '@/utils/permission'
 
 export default {
   name: 'UserManager',
@@ -220,10 +222,17 @@ export default {
   },
   data() {
     return {
+      // 当前权限
+      perms: {
+        canRead: false,
+        canAdd: false,
+        canEdit: false,
+        canDelete: false
+      },
       // 搜索表单
       searchForm: {
         keyword: '',
-        status: '1',
+        status: 2,
         page: 1,
         page_size: 10
       },
@@ -287,6 +296,7 @@ export default {
     }
   },
   created() {
+    this.perms = initPermissions(this.$route.meta.perms || [])
     this.getUserList()
     this.fetchUserRoles()
   },
@@ -311,7 +321,7 @@ export default {
     // 重置搜索
     resetSearch() {
       this.searchForm = {
-        status: '',
+        status: 2,
         page: 1,
         page_size: 10
       }
@@ -338,8 +348,8 @@ export default {
         email: '',
         mobile: '',
         real_name: '',
-        gender: '0',
-        status: '1'
+        gender: 0,
+        status: 1
       }
       this.dialogVisible = true
     },

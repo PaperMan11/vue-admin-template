@@ -62,6 +62,7 @@ const actions = {
         commit('SET_TOKEN', data.access_token)
         commit('SET_REFRESH_TOKEN', data.refresh_token)
         commit('SET_UID', data.id)
+        commit('SET_NAME', '')
         setToken(data.access_token)
         setRefreshToken(data.refresh_token)
         setUid(data.id)

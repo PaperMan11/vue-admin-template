@@ -6,8 +6,9 @@
         <el-form :inline="true" :model="searchForm">
           <el-form-item label="状态">
             <el-select v-model="searchForm.status" placeholder="全部">
-              <el-option label="正常" value="1" />
-              <el-option label="禁用" value="0" />
+              <el-option label="正常" :value="1" />
+              <el-option label="禁用" :value="0" />
+              <el-option label="全部" :value="2" />
             </el-select>
           </el-form-item>
           <el-form-item label="角色名">
@@ -19,7 +20,7 @@
         </el-form>
         <div class="table-card">
           <el-button type="info" icon="el-icon-refresh-right" size="small" @click="getRoleList" />
-          <el-button type="success" size="small" @click="openAddDialog">新增角色</el-button>
+          <el-button type="success" :disabled="!perms.canAdd" size="small" @click="openAddDialog">新增角色</el-button>
         </div>
       </div>
 
@@ -38,12 +39,12 @@
         </el-table-column>
         <el-table-column label="操作" width="400" fixed="right">
           <template slot-scope="{row}">
-            <el-button size="mini" type="primary" @click="openEditDialog(row)">编辑</el-button>
-            <el-button size="mini" type="warning" @click="toggleRoleStatus(row)">
+            <el-button size="mini" type="primary" :disabled="!perms.canEdit" @click="openEditDialog(row)">编辑</el-button>
+            <el-button size="mini" type="warning" :disabled="!perms.canEdit" @click="toggleRoleStatus(row)">
               {{ row.status === 1 ? '禁用' : '启用' }}
             </el-button>
-            <el-button size="mini" type="info" @click="openAssignRoleDialog(row)">分配安全范围</el-button>
-            <el-button size="mini" type="danger" @click="deleteRole(row)">删除</el-button>
+            <el-button size="mini" type="info" :disabled="!perms.canEdit" @click="openAssignRoleDialog(row)">分配安全范围</el-button>
+            <el-button size="mini" type="danger" :disabled="!perms.canDelete" @click="deleteRole(row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -79,8 +80,8 @@
         </el-form-item>
         <el-form-item v-if="isAdd" label="状态" prop="status">
           <el-select v-model="form.status" placeholder="请选择状态">
-            <el-option label="正常" value="1" />
-            <el-option label="禁用" value="0" />
+            <el-option label="正常" :value="1" />
+            <el-option label="禁用" :value="0" />
           </el-select>
         </el-form-item>
       </el-form>
@@ -120,22 +121,31 @@
       </el-form>
       <span slot="footer" class="dialog-footer">
         <el-button @click="permDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="submitAssignRole">确定</el-button>
+        <el-button type="primary" @click="submitAssignScope">确定</el-button>
       </span>
     </el-dialog>
   </div>
 </template>
 
 <script>
-import { getRoleList, updateRole, createRole, deleteRole, getRolePerms, updateRolePerms } from '@/api/sys/role.js'
+import { getRoleList, updateRole, createRole, deleteRole, getRolePerms, updateRolePerms, toggleRoleStatus } from '@/api/sys/role.js'
 import { getAllScopes } from '@/api/sys/scope'
+import { initPermissions } from '@/utils/permission'
 
 export default {
   name: 'RoleManager',
   data() {
     return {
+      // 当前权限
+      perms: {
+        canRead: false,
+        canAdd: false,
+        canEdit: false,
+        canDelete: false
+      },
+
       searchForm: {
-        status: '1',
+        status: 2,
         keyword: '',
         page: 1,
         page_size: 10
@@ -150,7 +160,7 @@ export default {
       dialogTitle: '',
       isAdd: true,
       form: {
-        role_id: '',
+        role_id: 0,
         role_name: '',
         role_code: '',
         description: '',
@@ -164,13 +174,14 @@ export default {
       // 分配权限弹窗相关数据
       permDialogVisible: false,
       permForm: {
-        role_id: '', // 角色ID
+        role_id: 0, // 角色ID
         role_code: '', // 角色编码
         role_scopes: []
       }
     }
   },
   created() {
+    this.perms = initPermissions(this.$route.meta.perms || [])
     this.getRoleList()
     this.fetchScopes()
   },
@@ -181,7 +192,7 @@ export default {
         const { data } = await getRoleList({
           page: this.searchForm.page,
           page_size: this.searchForm.page_size,
-          status: this.searchForm.status ? Number(this.searchForm.status) : 1
+          status: this.searchForm.status
         })
         this.roleList = data.roles || []
         this.total = data.page_response.total || 0
@@ -198,7 +209,7 @@ export default {
         role_name: '',
         role_code: '',
         description: '',
-        status: '1'
+        status: 1
       }
       this.dialogVisible = true
     },
@@ -223,15 +234,15 @@ export default {
         await this.$refs.formRef.validate()
         if (this.isAdd) {
           await createRole(this.form)
-          this.$message.success('新增用户成功')
+          this.$message.success('新增角色成功')
         } else {
           await updateRole(this.form)
-          this.$message.success('编辑用户成功')
+          this.$message.success('编辑角色成功')
         }
         this.dialogVisible = false
         this.getRoleList()
       } catch (err) {
-        this.$message.error(this.isAdd ? '新增用户失败' : '编辑用户失败' + err.message)
+        this.$message.error(this.isAdd ? '新增角色失败' : '编辑角色失败' + err.message)
       }
     },
     async openAssignRoleDialog(row) {
@@ -265,9 +276,15 @@ export default {
       const { data } = await getAllScopes()
       this.scopeList = data.scopes || []
     },
-    toggleRoleStatus(row) {
-      // 切换角色状态的逻辑
-      console.log('Toggling status for', row)
+    async toggleRoleStatus(row) {
+      try {
+        const newStatus = row.status === 1 ? 0 : 1
+        await toggleRoleStatus({ role_code: row.role_code, status: newStatus })
+        this.$message.success(`角色${newStatus === 1 ? '启用' : '禁用'}成功`)
+        this.getRoleList()
+      } catch (error) {
+        this.$message.error('角色状态切换失败：' + error.message)
+      }
     },
     async deleteRole(row) {
       try {
@@ -281,7 +298,11 @@ export default {
         this.$message.success('删除角色成功')
         this.getRoleList()
       } catch (error) {
-        this.$message.info('已取消删除')
+        if (error !== 'cancel') {
+          this.$message.error('删除角色失败：' + error.message)
+        } else {
+          this.$message.info('已取消删除')
+        }
       }
     },
     handleSizeChange(size) {
@@ -293,7 +314,7 @@ export default {
       this.getRoleList()
     },
     // 提交分配权限
-    async submitAssignRole() {
+    async submitAssignScope() {
       try {
         // const submitForm = this.permForm.scopes.filter(scope => scope.perms.length > 0)
         // console.log('Submitting assigned permissions:', submitForm)
@@ -329,6 +350,6 @@ export default {
 }
 .scope-header {
   font-weight: bold;
-  margin-bottom: 10px;
+  /* margin-bottom: 5px; */
 }
 </style>
