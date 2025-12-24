@@ -19,9 +19,10 @@
           </el-form-item>
         </el-form>
 
-        <el-button icon="el-icon-refresh-right" size="small" type="info" @click="getMenuList" />
-        <!-- 修正按钮文字：新增用户 → 新增菜单 -->
-        <el-button type="success" :disabled="!perms.canAdd" size="small" @click="openAddDialog">新增菜单</el-button>
+        <div class="table-card">
+          <el-button icon="el-icon-refresh-right" size="small" type="info" @click="getMenuList" />
+          <el-button type="success" :disabled="!perms.canAdd" size="small" @click="openAddDialog">新增菜单</el-button>
+        </div>
       </div>
 
       <!-- 菜单列表 -->
@@ -33,7 +34,7 @@
         <el-table-column prop="meta.icon" label="菜单图标" width="80" align="center">
           <template slot-scope="{row}">
             <i v-if="row.meta.icon.includes('el-icon')" :class="row.meta.icon" />
-            <svg-icon :icon-class="row.meta.icon" v-else />
+            <svg-icon v-else :icon-class="row.meta.icon" />
           </template>
         </el-table-column>
         <el-table-column prop="menu_type" label="菜单类型" width="80" align="center">
@@ -106,7 +107,7 @@
     <!-- 新增/编辑菜单弹窗 -->
     <el-dialog
       :title="dialogTitle"
-      v-model="dialogVisible"
+      :visible.sync="dialogVisible"
       width="600px"
       :close-on-click-modal="false"
     >
@@ -124,9 +125,9 @@
         <!-- 菜单类型 -->
         <el-form-item label="菜单类型" prop="menu_type">
           <el-select v-model="form.menu_type" placeholder="请选择菜单类型">
-            <el-option label="目录(M)" :value="M" />
-            <el-option label="菜单(C)" :value="C" />
-            <el-option label="按钮(F)" :value="F" />
+            <el-option label="目录(M)" value="M" />
+            <el-option label="菜单(C)" value="C" />
+            <el-option label="按钮(F)" value="F" />
           </el-select>
         </el-form-item>
 
@@ -249,25 +250,25 @@ export default {
       // 菜单表单（与菜单功能匹配）
       form: {
         id: '', // 编辑时的菜单ID
-        parent_id: 0,   // 父菜单ID
-        menu_name: '',  // 菜单名称
-        menu_type: '',  // 菜单类型 (M-目录, C-菜单, F-按钮)
-        path: '',       // 路由路径
-        component: '',  // 组件路径
-        redirect: '',   // 重定向路径
-        icon: '',       // 菜单图标
-        sort: 0,        // 排序
-        no_cache: false,// 是否缓存
-        affix: false,   // 是否固定在标签栏
-        external: false,// 是否外部链接
-        hidden: false,  // 是否隐藏
-        status: 1,      // 状态 (0-禁用, 1-正常)
-        scope_id: 0,    // 权限范围ID
-        remark: ''      // 备注
+        parent_id: 0, // 父菜单ID
+        menu_name: '', // 菜单名称
+        menu_type: '', // 菜单类型 (M-目录, C-菜单, F-按钮)
+        path: '', // 路由路径
+        component: '', // 组件路径
+        redirect: '', // 重定向路径
+        icon: '', // 菜单图标
+        sort: 0, // 排序
+        no_cache: false, // 是否缓存
+        affix: false, // 是否固定在标签栏
+        external: false, // 是否外部链接
+        hidden: false, // 是否隐藏
+        status: 1, // 状态 (0-禁用, 1-正常)
+        scope_id: 0, // 权限范围ID
+        remark: '' // 备注
       },
       // 表单校验规则（修正语法错误）
       formRules: {
-        parent_id: [{ message: '请选择父菜单', trigger: 'change' }],
+        parent_id: [{ type: 'number', message: '请选择父菜单', trigger: 'change' }],
         menu_name: [{ required: true, message: '请输入菜单名称', trigger: 'blur' }],
         menu_type: [{ required: true, message: '请选择菜单类型', trigger: 'change' }],
         path: [{ type: 'string', message: '请输入路由路径', trigger: 'blur' }],
@@ -275,8 +276,8 @@ export default {
         redirect: [{ type: 'string', message: '请输入重定向路径（可选）', trigger: 'blur' }],
         icon: [{ type: 'string', message: '请输入菜单图标类名', trigger: 'blur' }],
         sort: [{ type: 'number', required: true, message: '请输入排序权重', trigger: 'blur' }],
-        scope_id: [{ message: '请选择安全范围', trigger: 'change' }],
-        status: [{ required: true, message: '请选择菜单状态', trigger: 'change' }],
+        scope_id: [{ type: 'number', message: '请选择安全范围', trigger: 'change' }],
+        status: [{ type: 'number', required: true, message: '请选择菜单状态', trigger: 'change' }],
         remark: [{ type: 'string', message: '请输入备注信息（可选）', trigger: 'blur' }]
       }
     }
@@ -437,7 +438,7 @@ export default {
 }
 .search-form {
   margin-bottom: 0;
-  display: flex;
+  /* display: flex; */
   justify-content: space-between;
   align-items: center;
 }
