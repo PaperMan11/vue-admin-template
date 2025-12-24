@@ -138,3 +138,19 @@ export function getUnassignedScopeMenus() {
     method: 'get'
   })
 }
+
+export function assignScopeMenus(data) {
+  return request({
+    url: `/api/sys/scope/menus/assign`,
+    method: 'post',
+    data
+  })
+}
+
+export function getMenuList(data) {
+  return request({
+    url: '/api/sys/scope/menu/list',
+    method: 'post',
+    data
+  })
+}

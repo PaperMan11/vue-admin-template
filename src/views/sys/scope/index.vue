@@ -1,5 +1,5 @@
 <template>
-  <div class="role-manager-container">
+  <div class="scope-manager-container">
     <el-card>
       <!-- 搜索栏 -->
       <div class="search-form table-card">
@@ -11,7 +11,7 @@
               <el-option label="全部" :value="2" />
             </el-select>
           </el-form-item>
-          <el-form-item label="角色名">
+          <el-form-item label="安全范围">
             <el-input v-model="searchForm.keyword" placeholder="请输入内容" />
           </el-form-item>
           <el-form-item>
@@ -178,11 +178,11 @@
 </template>
 
 <script>
-import { getScopeList, createScope, updateScope, toggleScopeStatus, deleteScope, getScopeMenus, getUnassignedScopeMenus } from '@/api/sys/scope'
+import { getScopeList, createScope, updateScope, toggleScopeStatus, deleteScope, getScopeMenus, getUnassignedScopeMenus, assignScopeMenus } from '@/api/sys/scope'
 import { initPermissions } from '@/utils/permission'
 
 export default {
-  name: 'RoleManager',
+  name: 'ScopeManager',
   data() {
     return {
       // 当前权限
@@ -208,12 +208,21 @@ export default {
       dialogTitle: '',
       isAdd: true,
       form: {
-        id: 0,
-        scope_name: '',
-        scope_code: '',
-        description: '',
-        sort: 0,
-        status: 1
+        parent_id: 0, // 父菜单ID
+	      menu_name"` // 菜单名称
+	MenuType  string `json:"menu_type"` // 菜单类型 (M-目录, C-菜单, F-按钮)
+	Path      string `json:"path,optional"` // 路由路径
+	Component string `json:"component"` // 组件路径
+	Redirect  string `json:"redirect,optional"` // 重定向路径
+	Icon      string `json:"icon,optional"` // 菜单图标
+	Sort      int32  `json:"sort,default=0"` // 排序
+	NoCache   bool   `json:"no_cache,default=false"` // 是否缓存
+	Affix     bool   `json:"affix,default=false"` // 是否固定在标签栏
+	External  bool   `json:"external,default=false"` // 是否外部链接
+	Hidden    bool   `json:"hidden,default=false"` // 是否隐藏
+	Status    int32  `json:"status,default=1"` // 状态 (0-禁用, 1-正常)
+	ScopeId   int64  `json:"scope_id"` // 权限范围ID
+	Remark    string `json:"remark,optional"` // 备注
       },
       // 表单校验规则
       formRules: {
@@ -410,11 +419,19 @@ export default {
       this.unassignedMenus = [] // 清空未分配菜单列表
       this.$message.success('菜单添加成功')
     },
-    submitAssignMenus() {
-      this.$message.success('分配菜单成功')
-      console.log('分配的菜单：', this.scopeMenusForm.menus)
-      // todo: 调用接口保存分配的菜单
-      this.menusDialogVisible = false
+    async submitAssignMenus() {
+      try {
+        // console.log('Submitting menus:', this.scopeMenusForm.menus)
+        await assignScopeMenus({
+          scope_id: this.scopeMenusForm.scope_id,
+          menus: this.scopeMenusForm.menus
+        })
+        this.$message.success('分配菜单成功')
+      } catch (error) {
+        this.$message.error('分配菜单失败' + error.message)
+      } finally {
+        this.menusDialogVisible = false
+      }
     },
     // 禁用安全范围
     async toggleScopeStatus(row) {
@@ -460,7 +477,7 @@ export default {
 </script>
 
 <style>
-.role-manager-container {
+.scope-manager-container {
   padding: 20px;
 }
 .search-card {

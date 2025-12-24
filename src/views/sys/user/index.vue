@@ -308,7 +308,7 @@ export default {
         const { data } = await getUserList({
           page: this.searchForm.page,
           page_size: this.searchForm.page_size,
-          status: this.searchForm.status ? Number(this.searchForm.status) : 1
+          status: this.searchForm.status
         })
         this.userList = data.users || []
         this.total = data.total || 0

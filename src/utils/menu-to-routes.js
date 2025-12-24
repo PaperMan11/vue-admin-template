@@ -14,6 +14,13 @@ const componentMap = {
   'table/drag-table': () => import('@/views/table/drag-table'),
   'table/inline-edit-table': () => import('@/views/table/inline-edit-table'),
   'form/index': () => import('@/views/form/index'),
+
+  // 系统管理
+  'sys/user/index': () => import('@/views/sys/user/index'),
+  'sys/role/index': () => import('@/views/sys/role/index'),
+  'sys/scope/index': () => import('@/views/sys/scope/index'),
+  'sys/menu/index': () => import('@/views/sys/menu/index'),
+
   '404': () => import('@/views/404')
 }
 
@@ -21,8 +28,5 @@ export function getComponent(componentPath) {
   // 路径规范化（处理首尾斜杠、反斜杠等）
   const normalizedPath = componentPath?.trim().replace(/^\/|\/$/g, '').replace(/\\/g, '/') || '404'
   // 优先匹配映射表，兜底404
-  return componentMap[normalizedPath] || (() => {
-    console.warn(`未配置组件映射：${componentPath}，使用404兜底`)
-    return componentMap['error/404']
-  })
+  return componentMap[normalizedPath] || componentMap['404']
 }
