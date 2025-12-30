@@ -41,6 +41,28 @@
         </span>
       </el-form-item>
 
+      <!-- 验证码输入区域 -->
+      <el-form-item prop="captcha">
+        <span class="svg-container">
+          <svg-icon icon-class="lock" /> <!-- 可自行添加验证码图标，或替换为其他图标 -->
+        </span>
+        <el-input
+          ref="captcha"
+          v-model="loginForm.captcha"
+          placeholder="Please enter verification code"
+          name="captcha"
+          type="text"
+          tabindex="3"
+          auto-complete="off"
+          @keyup.enter.native="handleLogin"
+          style="width: 60%;"
+        />
+        <!-- 验证码图片展示 + 点击刷新 -->
+        <div class="captcha-img-container" @click="refreshCaptcha">
+          <img :src="captchaImage" alt="Verification Code" class="captcha-img" title="Click to refresh">
+        </div>
+      </el-form-item>
+
       <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleLogin">Login</el-button>
 
       <!-- <div class="tips">
@@ -55,6 +77,7 @@
 <script>
 import { validUsername } from '@/utils/validate'
 import { Message } from 'element-ui'
+import { getCaptcha } from '@/api/user'
 
 export default {
   name: 'Login',
@@ -73,18 +96,30 @@ export default {
         callback()
       }
     }
+    // 验证码校验规则
+    const validateCaptcha = (rule, value, callback) => {
+      if (value.trim() === '') {
+        callback(new Error('Please enter the verification code'))
+      } else {
+        callback()
+      }
+    }
     return {
       loginForm: {
         username: '',
-        password: ''
+        password: '',
+        captcha: '',
+        captcha_id: ''
       },
       loginRules: {
         username: [{ required: true, trigger: 'blur', validator: validateUsername }],
-        password: [{ required: true, trigger: 'blur', validator: validatePassword }]
+        password: [{ required: true, trigger: 'blur', validator: validatePassword }],
+        captcha: [{ required: true, trigger: 'blur', validator: validateCaptcha }] // 新增：验证码校验规则
       },
       loading: false,
       passwordType: 'password',
-      redirect: undefined
+      redirect: undefined,
+      captchaImage: '' // 存储Base64格式的验证码图片
     }
   },
   watch: {
@@ -94,6 +129,10 @@ export default {
       },
       immediate: true
     }
+  },
+  mounted() {
+    // 组件挂载后，自动加载验证码
+    this.refreshCaptcha()
   },
   methods: {
     showPwd() {
@@ -106,6 +145,28 @@ export default {
         this.$refs.password.focus()
       })
     },
+    // 获取/刷新验证码
+    async refreshCaptcha() {
+      try {
+        // 清空原有验证码输入
+        this.loginForm.captcha_id = ''
+        this.loginForm.captcha = ''
+        // 请求后端验证码接口（替换为你的实际接口地址）
+        // 若项目全局挂载了$http，可使用 this.$http.get
+        const { data } = await getCaptcha()
+        // 存储验证码ID和Base64图片
+        this.loginForm.captcha_id = data.captcha_id
+        this.captchaImage = data.captcha_image
+        console.log(this.loginForm)
+      } catch (error) {
+        console.error('获取验证码失败：', error)
+        Message({
+          message: 'Network error, please try again later',
+          type: 'error',
+          duration: 3 * 1000
+        })
+      }
+    },
     handleLogin() {
       this.$refs.loginForm.validate(valid => {
         if (valid) {
@@ -115,7 +176,8 @@ export default {
             this.loading = false
           }).catch((errorMsg) => {
             this.loading = false
-            // 统一提示HTTP错误
+            // 登录失败后，自动刷新验证码（防止重复使用）
+            this.refreshCaptcha()
             Message({
               message: errorMsg,
               type: 'error',
@@ -175,6 +237,13 @@ $cursor: #fff;
     background: rgba(0, 0, 0, 0.1);
     border-radius: 5px;
     color: #454545;
+    // 调整验证码表单项样式，适配图片展示
+    &[prop="captcha"] {
+      display: flex;
+      align-items: center;
+      padding: 0;
+      height: 47px;
+    }
   }
 }
 </style>
@@ -239,6 +308,25 @@ $light_gray:#eee;
     color: $dark_gray;
     cursor: pointer;
     user-select: none;
+  }
+
+  // 验证码图片样式
+  .captcha-img-container {
+    display: inline-block;
+    width: 55%;
+    height: 47px;
+    margin-left: 5%;
+    cursor: pointer;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .captcha-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    background-color: #fff;
+    border-radius: 4px;
   }
 }
 </style>

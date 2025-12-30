@@ -62,7 +62,6 @@
 </template>
 
 <script>
-import { fetchList } from '@/api/article'
 import Sortable from 'sortablejs'
 
 export default {
@@ -96,16 +95,16 @@ export default {
   },
   methods: {
     async getList() {
-      this.listLoading = true
-      const { data } = await fetchList(this.listQuery)
-      this.list = data.items
-      this.total = data.total
-      this.listLoading = false
-      this.oldList = this.list.map(v => v.id)
-      this.newList = this.oldList.slice()
-      this.$nextTick(() => {
-        this.setSort()
-      })
+      // this.listLoading = true
+      // const { data } = await fetchList(this.listQuery)
+      // this.list = data.items
+      // this.total = data.total
+      // this.listLoading = false
+      // this.oldList = this.list.map(v => v.id)
+      // this.newList = this.oldList.slice()
+      // this.$nextTick(() => {
+      //   this.setSort()
+      // })
     },
     setSort() {
       const el = this.$refs.dragTable.$el.querySelectorAll('.el-table__body-wrapper > table > tbody')[0]

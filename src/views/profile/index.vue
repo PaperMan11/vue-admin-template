@@ -56,9 +56,14 @@ export default {
   },
   methods: {
     getUser() {
+      // console.log(this.roles)
+      const roles = []
+      this.roles.forEach(role => {
+        roles.push(role.role_code)
+      })
       this.user = {
         name: this.name,
-        role: this.roles.join(' | '),
+        role: roles.join(' | '),
         email: 'admin@test.com',
         avatar: this.avatar
       }

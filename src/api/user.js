@@ -37,3 +37,10 @@ export function refreshToken(data) {
     data
   })
 }
+
+export function getCaptcha() {
+  return request({
+    url: '/api/sys/auth/captcha',
+    method: 'get'
+  })
+}
