@@ -41,34 +41,26 @@
         </span>
       </el-form-item>
 
-      <!-- 验证码输入区域 -->
-      <el-form-item prop="captcha">
-        <span class="svg-container">
-          <svg-icon icon-class="lock" /> <!-- 可自行添加验证码图标，或替换为其他图标 -->
-        </span>
-        <el-input
-          ref="captcha"
-          v-model="loginForm.captcha"
-          placeholder="Please enter verification code"
-          name="captcha"
-          type="text"
-          tabindex="3"
-          auto-complete="off"
-          @keyup.enter.native="handleLogin"
-          style="width: 60%;"
-        />
-        <!-- 验证码图片展示 + 点击刷新 -->
-        <div class="captcha-img-container" @click="refreshCaptcha">
+      <!-- 验证码区域：调整后与上方表单项长度一致、内部元素对齐 -->
+      <div class="captcha-wrap">
+        <el-form-item prop="captcha" class="captcha-form-item">
+          <el-input
+            ref="captcha"
+            v-model="loginForm.captcha"
+            class="captcha-input"
+            placeholder="Please enter verification code"
+            name="captcha"
+            type="text"
+            tabindex="3"
+            auto-complete="off"
+            @keyup.enter.native="handleLogin"
+          />
+        </el-form-item>
+        <div class="captcha-img-box" @click="refreshCaptcha">
           <img :src="captchaImage" alt="Verification Code" class="captcha-img" title="Click to refresh">
         </div>
-      </el-form-item>
-
+      </div>
       <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleLogin">Login</el-button>
-
-      <!-- <div class="tips">
-        <span style="margin-right:20px;">username: admin</span>
-        <span> password: any</span>
-      </div> -->
 
     </el-form>
   </div>
@@ -114,7 +106,7 @@ export default {
       loginRules: {
         username: [{ required: true, trigger: 'blur', validator: validateUsername }],
         password: [{ required: true, trigger: 'blur', validator: validatePassword }],
-        captcha: [{ required: true, trigger: 'blur', validator: validateCaptcha }] // 新增：验证码校验规则
+        captcha: [{ required: true, trigger: 'blur', validator: validateCaptcha }]
       },
       loading: false,
       passwordType: 'password',
@@ -151,15 +143,11 @@ export default {
         // 清空原有验证码输入
         this.loginForm.captcha_id = ''
         this.loginForm.captcha = ''
-        // 请求后端验证码接口（替换为你的实际接口地址）
-        // 若项目全局挂载了$http，可使用 this.$http.get
         const { data } = await getCaptcha()
         // 存储验证码ID和Base64图片
         this.loginForm.captcha_id = data.captcha_id
         this.captchaImage = data.captcha_image
-        console.log(this.loginForm)
       } catch (error) {
-        console.error('获取验证码失败：', error)
         Message({
           message: 'Network error, please try again later',
           type: 'error',
@@ -196,8 +184,6 @@ export default {
 
 <style lang="scss">
 /* 修复input 背景不协调 和光标变色 */
-/* Detail see https://github.com/PanJiaChen/vue-element-admin/pull/927 */
-
 $bg:#283443;
 $light_gray:#fff;
 $cursor: #fff;
@@ -237,13 +223,9 @@ $cursor: #fff;
     background: rgba(0, 0, 0, 0.1);
     border-radius: 5px;
     color: #454545;
-    // 调整验证码表单项样式，适配图片展示
-    &[prop="captcha"] {
-      display: flex;
-      align-items: center;
-      padding: 0;
-      height: 47px;
-    }
+    // 统一所有表单项的左右内边距（与验证码区域对齐的关键）
+    padding: 0 !important;
+    margin-bottom: 20px !important; // 保持与上方表单项间距一致
   }
 }
 </style>
@@ -310,23 +292,52 @@ $light_gray:#eee;
     user-select: none;
   }
 
-  // 验证码图片样式
-  .captcha-img-container {
-    display: inline-block;
-    width: 55%;
+  // 验证码表单项：清除多余样式，确保输入框填满容器
+  .captcha-form-item {
     height: 47px;
-    margin-left: 5%;
-    cursor: pointer;
-    border-radius: 4px;
-    overflow: hidden;
+    padding: 0 !important;
+    margin: 0 !important; // 清除默认外边距，避免布局偏移
+    flex: 1; // 占满captcha-wrap剩余宽度
   }
 
+  // 核心：弹性容器，与上方el-form-item长度一致 + 内部元素垂直对齐
+  .captcha-wrap {
+    display: flex;
+    align-items: center; // 强制内部输入框和图片垂直居中对齐
+    width: 100%; // 关键：与上方el-form-item保持同宽
+    gap: 8px; // 内部间距，不影响整体长度
+    margin-bottom: 20px !important; // 与上方表单项的间距保持一致
+  }
+
+  // 验证码输入框：填满父级el-form-item，高度匹配
+  .captcha-input {
+    height: 47px;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  // 验证码图片容器：固定宽度，不挤压，垂直对齐
+  .captcha-img-box {
+    width: 120px;
+    height: 47px;
+    cursor: pointer;
+    border-radius: 5px; // 与上方表单项圆角一致
+    overflow: hidden;
+    flex-shrink: 0; // 防止被挤压，保证宽度固定
+    align-self: stretch; // 可选：让图片高度与输入框完全一致
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  // 验证码图片：填充容器，不变形
   .captcha-img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     background-color: #fff;
-    border-radius: 4px;
+    border-radius: 5px; // 与上方表单项圆角一致
   }
 }
 </style>
