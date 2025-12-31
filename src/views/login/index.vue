@@ -69,7 +69,7 @@
 <script>
 import { validUsername } from '@/utils/validate'
 import { Message } from 'element-ui'
-import { getCaptcha } from '@/api/user'
+import { getCaptcha } from '@/api/sys/auth'
 
 export default {
   name: 'Login',
